@@ -1,0 +1,41 @@
+version: '3.8'
+
+services:
+  app:
+    build: .
+    container_name: ERP-API
+    depends_on:
+      - mongo  # Ensures MongoDB starts before the app
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env  
+    working_dir: /usr/src/app
+    volumes:
+      - .:/usr/src/app
+      - /usr/src/app/node_modules
+    command: ["npm", "run", "dev"]
+    networks:
+      - app-network  
+
+  mongo:
+    image: mongo:6.0  # Use latest stable MongoDB image
+    container_name: mongo-db
+    restart: always
+    ports:
+      - "27017:27017"  # Expose MongoDB
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=admin  # Default username
+      - MONGO_INITDB_ROOT_PASSWORD=secret  # Default password
+      - MONGO_INITDB_DATABASE=erp_db  # Default database
+    volumes:
+      - mongo-data:/data/db
+    networks:
+      - app-network  
+
+networks:
+  app-network:
+    driver: bridge
+
+volumes:
+  mongo-data:  # Persistent storage for MongoDB
